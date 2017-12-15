@@ -1,0 +1,460 @@
+---
+title: "Types of gabor patches for priming study"
+author: "Kevin Potter"
+date: "May 20, 2016"
+output: html_document
+---
+
+The first step is defining the function used to create a single gabor patch. For greater simplicity of the eventual stimulus, I convert the typical sine wave function used into a step function by centering the wave at 0.5, bounding it between 0 and 1, and rounding the results.
+
+```{r}
+f_Theta = function( lambda, theta, phi, x_i, y_j ) {
+	# Purpose:
+	# Calculates the grayscale intensity for a pair of coordinates given 
+	# a set of parameters.
+	# Arguments:
+	# lambda - The frequency, the number of oscillations (or bands) within a
+	#          single unit.
+	# theta  - The angle of the bands (in radians).
+	# phi    - The phase (in radians), indicating at what point the 
+	#          cycle starts.
+	# x_i    - The value of the current x-axis coordinate.
+	# y_j    - The value of the current y-axis coordinate.
+	# Returns:
+	# A grayscale intensity between 0 (white) and 1 (black)
+	
+	intensity = sin( 2*pi*lambda*( x_i*cos( theta ) + y_j*sin( theta ) + phi ) )
+	# Center at .5 and bound between 0 and 1
+	intensity = .5*intensity + .5
+	# Convert to step function
+	intensity = round( intensity )
+	
+	return( intensity )
+}
+```
+
+A gaussian window is added to the image as well.
+
+```{r}
+gauss_win = function( sigma, intensity, x_i, y_j ) {
+	# Purpose:
+	# A function to add a gaussian window to a set of grayscale intensity 
+	# values.
+	# Arguments:
+	# sigma     - The standard deviation for the gaussian window
+	# intensity - A vector of grayscale intensity values bounded between 
+	#             0 and 1
+	# x_i       - The x-axis coordinates (Ideally should be centered at 0)
+	# y_j       - The y-axis coordinates (Ideally should be centered at 0)
+	# Returns:
+	# A set of grayscale intensity values weighted by an non-normalized
+	# gaussian density.
+	
+	# Formula for 2D Gaussian
+  gauss = exp( -( (x_i^2 + y_j^2) / ( 2*sigma^2 ) ) )
+  # Temporarily convert intensity to lie between -.5 and .5
+	I = 2*(intensity - .5)
+	# Add gaussian window
+	I = I*gauss
+	# Rescale to lie between 0 and 1
+	I = I/2 + .5
+	
+	return( I )
+}
+```
+
+Here's an example of the stimulus for a 100 x 100 pixel image.
+
+```{r}
+ImageSize = 100 # Size (in pixels) of final image
+# Define the coordinate values for the x and y-axes
+# The values go from -.5 to .5 to ensure that the gaussian window 
+# is appropriately centered
+X = rep( seq( -.5, .5, length = ImageSize ), each = ImageSize )
+Y = rep( seq( -.5, .5, length = ImageSize ), ImageSize )
+theta = (45/360)*2*pi # Convert angle to radians
+phi = 0 # No need to adjust phase
+lambda = 5; # Approximately 5 bands per 1 unit of distance
+sigma = 20/ImageSize; # Scale standard deviation based on image size
+
+Intensity = apply( cbind( X, Y ), 1, function(mat) 
+	f_Theta( lambda, theta, phi, mat[1], mat[2] ) )
+Intensity = gauss_win( sigma, Intensity, X, Y )
+```
+
+```{r, echo=FALSE}
+plot_image = function( Intensity, ImageSize ) {
+	# Purpose:
+	# Function to generate a plot of a given square grayscale intensity 
+	# matrix.
+	# Arguments:
+	# Intensity - An intensity matrix ( ImageSize x ImageSize )
+	# ImageSize - The number of pixels per row (or column) of the image.
+
+	plot( c(0,ImageSize), c(0,ImageSize),
+				type = 'n', bty = 'n', xlab = ' ', ylab = ' ',
+				xaxt = 'n', yaxt = 'n' )
+	Intensity_matrix = matrix( Intensity, ImageSize, ImageSize, byrow = T )
+	for ( j in 1:ImageSize ) {
+		for (i in 1:ImageSize ) {
+			xa = c( i - 1, i - 1, i, i )
+			ya = c( j - 1, j, j, j - 1 )
+			val = Intensity_matrix[i,j]
+			polygon( xa, ya, border=NA, col = rgb(val,val,val,1) )
+		}
+	}
+}
+plot_image( Intensity, ImageSize )
+```
+
+I've defined the amplitude as a proportion, scaling the lower and upper boundaries of the step function. This requires minor adjustments to the function, but they are easy to implement.
+
+```{r}
+A = .5 # Amplitude
+Intensity = apply( cbind( X, Y ), 1, function(mat) 
+	A*( f_Theta( lambda, theta, phi, mat[1], mat[2] ) - .5 ) + .5 )
+Intensity = gauss_win( sigma, Intensity, X, Y )
+```
+
+```{r, echo=FALSE}
+plot_image( Intensity, ImageSize )
+```
+
+The final goal is to produce stimuli consisting of a overlay of two of these gratings rotated 90 degrees relative to each other. An easy way to do that is to create an intensity matrix that is a mixture of of the two gratings based on some proportion. In the first two studies, the mixing proportion *rho* was defined as the contrast to be manipulated, and the amplitudes of the two gratings were fixed to be equal.
+
+```{r}
+# Method used for first two studies
+A_1st_grating = 1
+theta_1st_grating = (-45/360)*2*pi
+grating_1st = apply( cbind( X, Y ), 1, function(mat) 
+	A_1st_grating*( f_Theta( 
+		lambda, theta_1st_grating, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+
+A_2nd_grating = 1
+theta_2nd_grating = (45/360)*2*pi
+grating_2nd = apply( cbind( X, Y ), 1, function(mat) 
+	A_2nd_grating*( f_Theta( 
+		lambda, theta_2nd_grating, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+
+rho = .8
+mixed_grating = (rho)*grating_1st + 
+	(1-rho)*grating_2nd
+```
+
+```{r, echo=FALSE}
+layout( cbind( 1, 2, 3 ) )
+
+plot_image( gauss_win( sigma, grating_1st, X, Y ), ImageSize )
+plot_image( gauss_win( sigma, grating_2nd, X, Y ), ImageSize )
+plot_image( gauss_win( sigma, mixed_grating, X, Y ), ImageSize )
+```
+
+However, an alternative approach is to fix the mixing proportion to be equal between gratings and instead vary the amplitude of each grating.
+
+```{r}
+# Alternative method
+A_1st_grating = .75
+theta_1st_grating = (-45/360)*2*pi
+grating_1st = apply( cbind( X, Y ), 1, function(mat) 
+	A_1st_grating*( f_Theta( 
+		lambda, theta_1st_grating, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+
+A_2nd_grating = .25
+theta_2nd_grating = (45/360)*2*pi
+grating_2nd = apply( cbind( X, Y ), 1, function(mat) 
+	A_2nd_grating*( f_Theta( 
+		lambda, theta_2nd_grating, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+
+rho = .5
+mixed_grating = (rho)*grating_1st + 
+	(1-rho)*grating_2nd
+```
+
+```{r, echo=FALSE}
+layout( cbind( 1, 2, 3 ) )
+
+plot_image( gauss_win( sigma, grating_1st, X, Y ), ImageSize )
+plot_image( gauss_win( sigma, grating_2nd, X, Y ), ImageSize )
+plot_image( gauss_win( sigma, mixed_grating, X, Y ), ImageSize )
+```
+
+To more closely match the design of Luu and Dosher, we want to base the contrast off of the grayscale intensities. Therefore, we will use the root mean square contrast function.
+
+```{r}
+RMS_contrast = function( mat ) {
+	# Purpose:
+	# Calculates the root mean square contrast for an intensity matrix.
+	# Arguments:
+	# mat - A M x N matrix of grayscale intensity values (bounded between 
+	#       0 and 1).
+	# Returns:
+	# The value of the root mean square contrast.
+	
+	M = nrow( mat )
+	N = ncol( mat )
+	Ibar = mean( mat )
+	
+	out = sqrt( sum( (mat - Ibar)^2 )/(M*N) )
+	
+	return( out )
+}
+```
+
+```{r,echo=FALSE}
+cntrst = numeric(3)
+amp = numeric(3)
+
+rho = 1; AF = .1; AT = rho*(1-AF) + AF;
+gr = apply( cbind( X, Y ), 1, function(mat) 
+	AT*( f_Theta( 
+		lambda, (-45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+gl = apply( cbind( X, Y ), 1, function(mat) 
+	AF*( f_Theta( 
+		lambda, (45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+m1 = .5*gr + .5*gl
+m1 = gauss_win( sigma, m1, X, Y )
+cntrst[1] = RMS_contrast( matrix( m1, ImageSize, ImageSize, byrow = T ) )
+amp[1] = AT;
+
+rho = .5; AF = .1; AT = rho*(1-AF) + AF;
+gr = apply( cbind( X, Y ), 1, function(mat) 
+	AT*( f_Theta( 
+		lambda, (-45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+gl = apply( cbind( X, Y ), 1, function(mat) 
+	AF*( f_Theta( 
+		lambda, (45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+m2 = .5*gr + .5*gl
+m2 = gauss_win( sigma, m2, X, Y )
+cntrst[2] = RMS_contrast( matrix( m2, ImageSize, ImageSize, byrow = T ) )
+amp[2] = AT;
+
+rho = .1; AF = .1; AT = rho*(1-AF) + AF;
+gr = apply( cbind( X, Y ), 1, function(mat) 
+	AT*( f_Theta( 
+		lambda, (-45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+gl = apply( cbind( X, Y ), 1, function(mat) 
+	AF*( f_Theta( 
+		lambda, (45/360)*2*pi, phi, mat[1], mat[2] 
+		) - .5 ) + .5 )
+m3 = .5*gr + .5*gl
+m3 = gauss_win( sigma, m3, X, Y )
+cntrst[3] = RMS_contrast( matrix( m3, ImageSize, ImageSize, byrow = T ) )
+amp[3] = AT;
+
+layout( cbind( 1, 2, 3 ) )
+
+plot_image( m1, ImageSize )
+mtext( paste('RMS contrast:',round( cntrst[1], 2 ) ),
+			 side = 3 )
+mtext( paste('Target amplitude:',round( amp[1], 2 ) ),
+			 side = 1 )
+plot_image( m2, ImageSize )
+mtext( paste('RMS contrast:',round( cntrst[2], 2 ) ),
+			 side = 3 )
+mtext( paste('Target amplitude:',round( amp[2], 2 ) ),
+			 side = 1 )
+plot_image( m3, ImageSize )
+mtext( paste('RMS contrast:',round( cntrst[3], 2 ) ),
+			 side = 3 )
+mtext( paste('Target amplitude:',round( amp[3], 2 ) ),
+			 side = 1 )
+```
+
+The first approach is to determine the amplitude for the foil and target gratings that corresponds to a particular set of RMS contrast values before mixing the gratings together. Hence, given a pair of RMS contrast values, we can determine the corresponding amplitudes separately for the target and foil.
+
+```{r}
+
+contrast_to_amp = function( X, Y, C_RMS, theta, 
+														lambda, bound = F ) {
+	# Purpose:
+	# Forthcoming
+	# Arguments:
+	# Forthcoming
+	# Returns:
+	# Forthcoming
+	
+	M = sqrt( length( X ) )
+	MN = M*M
+	
+	beta_ij = f_Theta( lambda, theta, 0, X, Y ) - .5
+	part_1 = sqrt( sum( ( beta_ij - sum( beta_ij )/MN )^2 )/MN )
+	
+	# Determine boundaries
+	Intensity = beta_ij + .5 # A = 1
+	upper_lim = RMS_contrast( matrix( Intensity, M, M, byrow = T ) )
+	lower_lim = 0 # A = 0
+	
+	# Restrict to be within boundaries
+	C_RMS = min( C_RMS, upper_lim )
+	C_RMS = max( lower_lim, C_RMS )
+	
+	if ( bound ) {
+		return( c( lower_lim, upper_lim ) )
+	} else {
+		return( A = C_RMS/part_1 )
+	}
+}
+
+
+A = .01
+thetaT = 45
+thetaF = 2*pi*(45-90)/360
+thetaT = 2*pi*thetaT/360
+
+beta_kl = f_Theta( lambda, thetaT, 0, X, Y ) - .5
+
+Intensity = A*beta_kl + .5
+C_RMS = RMS_contrast( matrix( Intensity, ImageSize, ImageSize, byrow = T ) )
+
+MN = length( beta_kl )
+chk = sqrt( sum( ( beta_kl - sum( beta_kl )/MN )^2 )/MN )
+# C_RMS/chk
+
+C_RMS = .15
+A = C_RMS/chk
+Intensity = A*beta_kl + .5
+
+plot_image( Intensity, ImageSize )
+
+
+
+```
+
+Another approach, given a fixed amplitude for the grating functioning as a foil, is to find the contrast that produces some desired threshold level of performance (e.g. 75% accuracy). To do so, given some contrast level, we need to be able to calculate the corresponding amplitude of the target grating. This can be somewhat tricky, as, the range of possible contrasts is bounded due to the necessity of having the target amplitude be equal to or greater than the foil amplitude, as seen in the plot below.
+
+```{r,echo=FALSE}
+target_amp = function( X, Y, cntrst, A, thetaT, lambda, sigma,
+											 bounds = F ) {
+	# Purpose:
+	# Forthcoming
+	# Arguments:
+	# X
+	# Y
+	# cntrst
+	# A
+	# thetaT
+	# lambda
+	# sigma
+	# Returns:
+	# Forthcoming
+	
+	# Foil angle is offset by 90 degrees from target angle
+	thetaF = thetaT - 90
+	thetaT = 2*pi*thetaT/360; thetaF = 2*pi*thetaF/360
+	
+	# Grating function
+	fTheta = function(x_i,y_j,theta) {
+		intensity = sin( 2*pi*lambda*( 
+			x_i*cos( theta ) + y_j*sin( theta ) + phi ) )
+		intensity = .5*intensity + .5
+		intensity = round( intensity )
+		
+		return( intensity )
+	}
+	
+	# Gaussian window function
+	g = function( x_i, y_j, sigma ) {
+		
+		out = exp( -( (x_i^2 + y_j^2) / ( 2*sigma^2 ) ) )
+		
+		return( out )
+	}
+	
+	# Define a set of constants
+	MN = length( X )
+	beta_T = fTheta(X,Y,thetaT) - .5
+	beta_F = fTheta(X,Y,thetaF) - .5
+	alpha_1 = g(X,Y,sigma)*beta_T*(1-A)/2
+	alpha_2 = .5*g(X,Y,sigma)*(A*beta_T + (A*beta_F + .5) - .5 )+.5
+	k1 = alpha_1 - sum( alpha_1 )/MN
+	k2 = alpha_2 - sum( alpha_2 )/MN
+	a = sum( k1^2 )/MN
+	b = sum( 2*k1*k2 )/MN
+	c = sum( k2^2 )/MN
+	
+	if (bounds) {
+		rho = 1
+		upper_lim = a*rho^2 + b*rho + c
+		rho = 0
+		lower_lim = a*rho^2 + b*rho + c
+		out = sqrt( c( lower_lim, upper_lim ) )
+	} else {
+		out = ( sqrt( b^2 - 4*a*( c - cntrst^2 ) ) - b )/(2*a)
+	}
+	
+	return( out )
+}
+
+foil_val = exp( seq(-5,0,.5) )
+upper_lim = numeric( length( foil_val ) )
+lower_lim = numeric( length( foil_val ) )
+for ( i in 1:length(foil_val) ) {
+	tmp = target_amp( X, Y, 0, foil_val[i], 45, 5, .2, bounds = T)
+	upper_lim[i] = tmp[2]
+	lower_lim[i] = tmp[1]
+}
+
+yl = c( min( lower_lim ), max( upper_lim ) )
+plot( c( 1, length( foil_val ) ), yl, type = 'n',
+			xlab = 'Foil amplitude', ylab = 'RMS contrast',
+			bty = 'l', xaxt = 'n' )
+axis( 1, 1:length( foil_val ), round( foil_val, 2 ) )
+segments( 1:length(foil_val), lower_lim,
+					1:length(foil_val), upper_lim )
+```
+
+However, it is possible, with several algebraic manipulations, to isolate the relation between the range of feasible contrasts and the proportion governing the target amplitude.
+
+```{r, echo = FALSE }
+
+stim_create = function(X,Y,rho,A,thetaT,lambda,sigma) {
+	
+	# Foil angle is offset by 90 degrees from target angle
+	thetaF = thetaT - 90
+	thetaT = 2*pi*thetaT/360; thetaF = 2*pi*thetaF/360
+	
+	AT = rho*(1-A) + A
+	
+	gr = apply( cbind( X, Y ), 1, function(mat) 
+		AT*( f_Theta( 
+			lambda, thetaT, 0, mat[1], mat[2] ) - .5 ) + .5 )
+	gl = apply( cbind( X, Y ), 1, function(mat) 
+	A*( f_Theta( 
+		lambda, thetaF, 0, mat[1], mat[2] ) - .5 ) + .5 )
+	m1 = .5*gr + .5*gl
+	m1 = gauss_win( sigma, m1, X, Y )
+	cntrst = RMS_contrast( matrix( m1, ImageSize, ImageSize, byrow = T ) )
+	
+	return( list( Intensity = m1, Contrast = cntrst ) )
+}
+
+plot( c(0,1), c(0,.12), type = 'n', bty = 'l',
+			xlab = 'Target amplitude', ylab = 'Contrast',
+			xaxt ='n' )
+
+A = .5
+cntrst_lim = target_amp( X, Y, 0, A, 45, 5, .2, bounds = T)
+c_val = seq( cntrst_lim[1], cntrst_lim[2], length = 20 )
+rho = numeric( length( c_val ) )
+c_chk = numeric( length( c_val ) )
+
+for (i in 1:length(c_val)) {
+	rho[i] = target_amp( X, Y, c_val[i], A, 45, lambda, sigma )
+	
+	c_chk[i] = stim_create( X, Y, rho[i], A, 45, lambda, sigma )[[2]]
+	
+}
+lines( rho, c_val )
+lines( rho, c_chk, col='red', lty = 2 )
+
+axis(1,rho,round(rho*(1-A)+A,2))
+```

@@ -1,0 +1,155 @@
+
+|--------|
+| Exp. A |
+|--------|
+
+Structure of a single trial - refresh rate (60 Hz)
+
+   Stimulus            | Timing in ms (# frames)
+1) Fixation            | ~316.67 (19)
+2) Placeholder         | ~383.33 (23), ~366.67 (22), ~333.33 (20), ~266.67 (16), ~133.33  (8)
+3) Prime               |  ~16.67  (1),  ~33.33  (2),  ~66.67  (4), ~133.33  (8), ~266.67 (16)
+4) Target + prime mask |  ~83.33  (5)
+5) Choice (w/ static)  | Variable
+6) Feedback            | ~400.00 (24)
+
+Total time (excluding choice/feedback) = ~800 (48)
+
+Conditions
+
+   | Prime         | Prime   | Prime    | Target   | Onscreen  |
+#  | duration (ms) | type    | rotation | rotation | Choice    | # Trials
+---|---------------|---------|----------|----------|-----------|----------
+1  | 17            | Neither | Vertical | R. left  | None      | 15
+2  | 33            | Neither | Vertical | R. left  | None      | 15
+3  | 67            | Neither | Vertical | R. left  | None      | 15
+4  | 133           | Neither | Vertical | R. left  | None      | 15
+5  | 267           | Neither | Vertical | R. left  | None      | 15
+6  | 17            | Neither | Vertical | R. right | None      | 15
+7  | 33            | Neither | Vertical | R. right | None      | 15
+8  | 67            | Neither | Vertical | R. right | None      | 15
+9  | 133           | Neither | Vertical | R. right | None      | 15
+10 | 267           | Neither | Vertical | R. right | None      | 15
+11 | 17            | Foil    | R. right | R. left  | None      | 15
+12 | 33            | Foil    | R. right | R. left  | None      | 15
+13 | 67            | Foil    | R. right | R. left  | None      | 15
+14 | 133           | Foil    | R. right | R. left  | None      | 15
+15 | 267           | Foil    | R. right | R. left  | None      | 15
+16 | 17            | Foil    | R. left  | R. right | None      | 15
+17 | 33            | Foil    | R. left  | R. right | None      | 15
+18 | 67            | Foil    | R. left  | R. right | None      | 15
+19 | 133           | Foil    | R. left  | R. right | None      | 15
+20 | 267           | Foil    | R. left  | R. right | None      | 15
+21 | 17            | Target  | R. left  | R. left  | None      | 15
+22 | 33            | Target  | R. left  | R. left  | None      | 15
+23 | 67            | Target  | R. left  | R. left  | None      | 15
+24 | 133           | Target  | R. left  | R. left  | None      | 15
+25 | 267           | Target  | R. left  | R. left  | None      | 15
+26 | 17            | Target  | R. right | R. right | None      | 15
+27 | 33            | Target  | R. right | R. right | None      | 15
+28 | 67            | Target  | R. right | R. right | None      | 15
+29 | 133           | Target  | R. right | R. right | None      | 15
+30 | 267           | Target  | R. right | R. right | None      | 15
+
+|--------|
+| Exp. B |
+|--------|
+
+Structure of a single trial - refresh rate (120 Hz)
+
+   Stimulus            | Timing in ms (# frames)
+1) Fixation            | ~316.67 (38)
+2) Placeholder         | ~391.67 (47), ~366.67 (44), ~266.67 (32)
+3) Prime               |   ~8.33  (1),  ~33.33  (4), ~133.33 (16)
+4) Target + prime mask |  ~83.33 (10)
+5) Choice (w/ static)  | Variable
+6) Feedback            | ~400.00 (48)
+
+Total time (excluding choice/feedback) = ~800 (96)
+
+Conditions
+
+   | Prime         | Prime   | Prime    | Target   | Onscreen    |
+#  | duration (ms) | type    | rotation | rotation | Choice      | # Trials
+---|---------------|---------|----------|----------|-------------|----------
+1  | 8             | Foil    | R. right | R. left  |  None       | 45
+2  | 33            | Foil    | R. right | R. left  |  None       | 45
+3  | 133           | Foil    | R. right | R. left  |  None       | 45
+4  | 8             | Foil    | R. left  | R. right |  None       | 45
+5  | 33            | Foil    | R. left  | R. right |  None       | 45
+6  | 133           | Foil    | R. left  | R. right |  None       | 45
+7  | 8             | Target  | R. left  | R. left  |  None       | 45
+8  | 33            | Target  | R. left  | R. left  |  None       | 45
+9  | 133           | Target  | R. left  | R. left  |  None       | 45
+10 | 8             | Target  | R. right | R. right |  None       | 45
+11 | 33            | Target  | R. right | R. right |  None       | 45
+12 | 133           | Target  | R. right | R. right |  None       | 45
+
+|--------|
+| Exp. C |
+|--------|
+
+Structure of a single trial - refresh rate (120 Hz)
+
+   Stimulus            | Timing in ms (# frames)
+1) Fixation            | ~100.00 (12)
+2) Placeholder         | ~283.34 (34), ~183.34 (22)
+3) Prime               |  ~33.34  (4), ~133.34 (16)
+4) Target + prime mask |  ~83.34 (10)
+5) Mask                | ~300.00 (36) 
+6) Choice (no static)  | Variable
+7) Feedback            | ~400.00 (48)
+
+Total time (excluding choice/feedback) = ~800 (96)
+
+Conditions
+
+   | Prime         | Prime   | Prime    | Target   | Onscreen   |
+#  | duration (ms) | type    | rotation | rotation | Choice(s)  | # Trials
+---|---------------|---------|----------|----------|------------|----------
+1  | 33            | Foil    | R. right | R. left  | Same       | 34
+2  | 133           | Foil    | R. right | R. left  | Same       | 34
+3  | 33            | Foil    | R. right | R. left  | Different  | 34
+4  | 133           | Foil    | R. right | R. left  | Different  | 34
+5  | 33            | Foil    | R. left  | R. right | Same       | 34
+6  | 133           | Foil    | R. left  | R. right | Same       | 34
+7  | 33            | Foil    | R. left  | R. right | Different  | 34
+8  | 133           | Foil    | R. left  | R. right | Different  | 34
+9  | 33            | Target  | R. left  | R. left  | Same       | 34
+10 | 133           | Target  | R. left  | R. left  | Same       | 34
+11 | 33            | Target  | R. left  | R. left  | Different  | 34
+12 | 133           | Target  | R. left  | R. left  | Different  | 34
+13 | 33            | Target  | R. right | R. right | Same       | 34
+14 | 133           | Target  | R. right | R. right | Same       | 34
+15 | 33            | Target  | R. right | R. right | Different  | 34
+16 | 133           | Target  | R. right | R. right | Different  | 34
+
+|--------|
+| Exp. D |
+|--------|
+
+Structure of a single trial - refresh rate (60 Hz)
+
+   Stimulus            | Timing in ms (# frames)
+1) Fixation            | ~516.67 (31)
+2) Placeholder         | ~383.33 (23),  ~266.67 (16)
+3) Prime               |  ~16.67  (1),  ~133.33  (8)
+4) Target + prime mask |  ~83.33  (5)
+5) Choice (w/ static)  | Variable
+6) Feedback            | ~500.00 (30)
+
+Total time (excluding choice/feedback) = ~1000 (60)
+
+Conditions
+
+   | Prime         | Prime   | Prime    | Target   | Onscreen    |
+#  | duration (ms) | type    | rotation | rotation | Choice      | # Trials
+---|---------------|---------|----------|----------|-------------|----------
+1  | 17            | Foil    | R. right | R. left  |  None       | 50 x 3 sessions
+2  | 134           | Foil    | R. right | R. left  |  None       | 50 x 3 sessions
+3  | 17            | Foil    | R. left  | R. right |  None       | 50 x 3 sessions
+4  | 134           | Foil    | R. left  | R. right |  None       | 50 x 3 sessions
+5  | 17            | Target  | R. left  | R. left  |  None       | 50 x 3 sessions
+6  | 134           | Target  | R. left  | R. left  |  None       | 50 x 3 sessions
+7  | 17            | Target  | R. right | R. right |  None       | 50 x 3 sessions
+8  | 134           | Target  | R. right | R. right |  None       | 50 x 3 sessions
